@@ -4,8 +4,8 @@ from scipy.linalg import eigvals
 from cycler import cycler
 
 g = 9.81                    #Gravedad
-w = 1.448                   #Wheelbase
-varepsilon = 26.8 * np.pi/180   #Caster angle
+w = 1.448                   #Distancia entre ejes
+varepsilon = 26.8 * np.pi/180   #Angulo caster
 a_n = 0.105                 #Trail
 m_0 = 195                   #Masa moto
 b_0 = 0.722                 #Posición CoM
@@ -43,7 +43,7 @@ k_l_f = 160000              #Rigidez estructural transversal
 k_l_r = 140000              #Rigidez estructural transversal
 
 l_beta = 0.67               #Punto de flexión horquilla
-l_b = 0.67 ## podria ser    #BUSCAR
+l_b = 0.67                  #Podría ser l_beta
 k_beta = 38000              #Rigidez de flexión
 m_b = 18                    #Masa de flexión (Masa de horquilla?)
 e_b = 0                     #CoM horquilla
@@ -60,18 +60,18 @@ omega_r_dot = 0             #Aceleración angular rueda
 N_r_0 = ((w - b)/w) * m * g
 N_f_0 = (b/w) * m * g
 
-#Asumido---------------------------------
-
-k_gamma_f = 1
-k_gamma_r = 1
+k_gamma_f = k_phi_f
+k_gamma_r = k_phi_r
 
 k_y_f = k_l_r
 k_y_r = k_l_f
 
 
-I_bzz = I_bxx * 0.1       #
+I_bzz = I_bxx * 0.1         #
 x_f    = 0.5                #
 x_b    = 0.155              #
+
+rho_air = 1.2041
 
 #---------------------------------------
 
@@ -110,13 +110,13 @@ E[7,7] = 1
 E[8,8] = 1
 E[9,9] = 1
 
-for i in range(1, 10):
+for i in range(1, 10):          #Este ciclo es para hacer la matriz simétrica
     for j in range(i):
         E[i, j] = E[j, i]
         
-E2 = np.linalg.inv(E)
+E2 = np.linalg.inv(E)           #Se usa para el primer plot
 
-A_total = []
+A_total = []                    #Son dos vectores porque se probaron diferentes combinaciones
 A_total2 = []
 
 Vx_rango = np.linspace(5,61,75)
@@ -127,11 +127,10 @@ for i in Vx_rango:
     omega_f = V_x/R_f
     omega_r = V_x/R_r
 
-    rho_air = 1.2041
     F_ad = 0.5 * rho_air * CdA * V_x**2
     X_r = F_ad
 
-    N_r = N_r_0 + (h_A/w) * F_ad
+    N_r = N_r_0 + (h_A/w) * F_ad    #Normales con transferencia de carga aerodinámica
     N_f = N_f_0 - (h_A/w) * F_ad
 
 
@@ -140,7 +139,7 @@ for i in Vx_rango:
     A[0,5] = k_alpha_r * N_r
     A[0,6] = k_alpha_f * N_f
     A[0,7] = k_gamma_f * N_f + k_gamma_r * N_r
-    A[0,8] = X_f * np.cos(varepsilon) + N_f * k_gamma_f * np.sin(varepsilon)
+    A[0,8] = X_f * np.cos(varepsilon) + N_f * k_gamma_f * np.sin(varepsilon) 
     A[0,9] = -X_f * np.sin(varepsilon) + N_f * k_gamma_f * np.cos(varepsilon)
 
     A[1,1] = -m * b * V_x
@@ -205,22 +204,6 @@ x_val_total2 = []
 x_val_real2 = []
 
 
-# for k in A_total:
-#     u = np.linalg.eigvals(np.dot(E2, k))
-#     plt.scatter(np.real(u), np.imag(u), facecolors="none", edgecolors="black", s=10)
-
-
-# plt.xlabel('Parte real')
-# plt.ylabel('Parte imaginaria')
-# plt.xlim([-30, 10])
-# plt.ylim([0, 65])
-# plt.text(-7, 45, 'Wobble', size=10)
-# plt.text(-7, 20, 'Weave', size=10)
-# plt.text(-7, 1, 'Capsize', size=10)
-# plt.grid()
-# plt.show()
-
-
 
 fig, ax1 = plt.subplots()
 
@@ -261,6 +244,11 @@ for j in A_total2:
     x_val = eigvals(j)
     x_val_total.append(x_val)
     x_val_real.append(x_val.real)
+
+#Los default_cycler son para darle formato al gráfico
+#Los eigenvalues presentan muchos datos atípicos, lo ideal es filtrarlos para generar
+#el gráfico de estabilidad vs velocidad
+
 
 # default_cycler = (cycler(color=['r', 'g', 'b',]) +
 #                   cycler(linestyle=['-', '--', ':']))
