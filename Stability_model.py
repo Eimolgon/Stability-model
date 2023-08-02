@@ -67,9 +67,9 @@ k_y_f = k_l_r
 k_y_r = k_l_f
 
 
-I_bzz = I_bxx * 0.1         #
-x_f    = 0.5                #
-x_b    = 0.155              #
+I_bzz = I_bxx 
+x_f    = e_f
+x_b    = e_b
 
 rho_air = 1.2041
 
@@ -185,7 +185,7 @@ for i in Vx_rango:
     A[6,1] = (- k_y_f) / N_f * w
     A[6,2] = 1 - k_gamma_f
     A[6,3] = (1 - k_gamma_f) * np.sin(varepsilon) + a_n * k_y_f/N_f
-    A[6,4] = (1 - k_gamma_f) * np.cos(varepsilon) + l_b * k_y_f/N_f + (R_f * k_l_f * np.cos(varepsilon))/N_f
+    A[6,4] = (1 - k_gamma_f) * np.cos(varepsilon) + (l_b  - rho_f * np.cos(varepsilon)) * k_l_f/N_f
     A[6,6] = -(V_x * k_y_f) / N_f
     A[6,8] = V_x*np.cos(varepsilon) * k_y_f/N_f
     A[6,9] = - V_x*np.sin(varepsilon) * k_y_f/N_f
